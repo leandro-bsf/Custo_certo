@@ -1,0 +1,19 @@
+# Query: photo
+# ContextLines: 1
+
+3 resultados - 3 arquivos
+
+app_old.py:
+  7  # --- CONFIGURAÇÃO DA PÁGINA ---
+  8: st.set_page_config(page_title="CustoCerto - Gestão de Obras", layout="wide")
+  9  
+
+auth.py:
+  4  def login_screen():
+  5:     st.markdown("## 🔐 Login - Photo Love")
+  6  
+
+modules/home.py:
+  71      with col_logo:
+  72:         st.markdown("### 📸 Photo Love")
+  73  
