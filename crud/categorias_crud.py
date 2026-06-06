@@ -14,7 +14,7 @@ def criar_categoria(usuario_id, descricao):
 def listar_categorias(usuario_id):
     conn = get_connection()
     df = pd.read_sql(
-        "SELECT * FROM categorias WHERE usuario_id=?",
+        "SELECT id, descricao, data_criacao FROM categorias WHERE usuario_id=?",
         conn,
         params=(usuario_id,)
     )

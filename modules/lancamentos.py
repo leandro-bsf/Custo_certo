@@ -1,3 +1,4 @@
+from crud.fornecedor_crud import listar_fornecedores
 import streamlit as st
 import plotly.express as px
 from crud.lancamentos_crud import (
@@ -25,7 +26,11 @@ def render(usuario_id: int):
 
     obras_dict = dict(zip(df_obras["descricao"], df_obras["id"]))
     categorias_dict = dict(zip(df_cat["descricao"], df_cat["id"]))
+    # 1. Certifique-se de que está buscando os dados de fornecedores no início do render:
+    df_fornecedores = listar_fornecedores(usuario_id)
 
+# 2. Certifique-se de criar o dicionário mapeando os fornecedores:
+    fornecedores_dict = dict(zip(df_fornecedores['nome'], df_fornecedores['id'])) if not df_fornecedores.empty else {}
     # =====================================================
     # BOTÃO NOVO LANÇAMENTO
     # =====================================================
@@ -36,7 +41,8 @@ def render(usuario_id: int):
             abrir_modal_lancamento(
                 usuario_id,
                 obras_dict,
-                categorias_dict
+                categorias_dict,
+                fornecedores_dict
             )
 
     # =====================================================
@@ -87,36 +93,52 @@ def render(usuario_id: int):
     else:
         st.info("Sem dados suficientes para gerar o gráfico.")
 
-
 # =====================================================
 # MODAL NOVO LANÇAMENTO
 # =====================================================
 @st.dialog("Registrar Novo Lançamento")
-def abrir_modal_lancamento(usuario_id, obras_dict, categorias_dict):
+def abrir_modal_lancamento(
+    usuario_id,
+    obras_dict,
+    categorias_dict,
+    fornecedores_dict # <-- Nome correto do parâmetro
+):
 
-    with st.form("form_lancamento_modal"):
+    with st.form("form_lancamento_modal", clear_on_submit=True):
 
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
 
-        obra_nome = col1.selectbox("Obra", list(obras_dict.keys()))
-        categoria_nome = col2.selectbox("Categoria", list(categorias_dict.keys()))
+        obra_nome = col1.selectbox(
+            "Obra",
+            list(obras_dict.keys()) if obras_dict else ["Nenhuma obra cadastrada"]
+        )
+
+        categoria_nome = col2.selectbox(
+            "Categoria",
+            list(categorias_dict.keys()) if categorias_dict else ["Nenhuma categoria cadastrada"]
+        )
+
+        fornecedor_nome = col3.selectbox(
+            "Fornecedor",
+            list(fornecedores_dict.keys()) if fornecedores_dict else ["Nenhum fornecedor cadastrado"]
+        )
 
         material = st.text_input("Material")
 
-        col3, col4, col5 = st.columns(3)
+        col4, col5, col6 = st.columns(3)
 
-        medida = col3.selectbox(
+        medida = col4.selectbox(
             "Medida",
             ["Unidade", "Metro", "Kg", "Litro"]
         )
 
-        qtd = col4.number_input(
+        qtd = col5.number_input(
             "Quantidade",
             min_value=0.01,
             step=0.01
         )
 
-        v_unit = col5.number_input(
+        v_unit = col6.number_input(
             "Valor Unitário",
             min_value=0.0,
             step=0.01
@@ -134,24 +156,34 @@ def abrir_modal_lancamento(usuario_id, obras_dict, categorias_dict):
 
         salvar = col_btn1.form_submit_button(
             "💾 Salvar",
-            use_container_width=True
+            width="stretch"
         )
 
         cancelar = col_btn2.form_submit_button(
             "❌ Cancelar",
-            use_container_width=True
+            width="stretch"
         )
 
         if salvar:
-
             if not material.strip():
                 st.warning("Informe o material.")
                 return
+            
+            # CORRIGIDO: alterado de "proveedores_dict" para "fornecedores_dict"
+            if not obras_dict or not categorias_dict or not fornecedores_dict:
+                st.error("Certifique-se de ter Obras, Categorias e Fornecedores cadastrados antes de lançar.")
+                return
+
+            # CORRIGIDO: alterado para buscar do dicionário em português de forma segura
+            id_cat = categorias_dict.get(categoria_nome)
+            id_obr = obras_dict.get(obra_nome)
+            id_for = fornecedores_dict.get(fornecedor_nome)
 
             criar_lancamento(
                 usuario_id=usuario_id,
-                id_categoria=categorias_dict[categoria_nome],
-                id_obra=obras_dict[obra_nome],
+                id_categoria=id_cat,
+                id_obra=id_obr,
+                fornecedor_id=id_for,
                 material=material.strip(),
                 tipo_medida=medida,
                 quantidade=qtd,

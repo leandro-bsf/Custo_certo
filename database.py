@@ -49,6 +49,20 @@ def init_db():
             valor_contratado REAL DEFAULT 0
         )
     """)
+    # FORNECEDOR
+    c.execute("""
+            CREATE  TABLE IF NOT EXISTS  fornecedores (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario_id INTEGER NOT NULL,
+                nome TEXT NOT NULL,
+                cnpj TEXT,
+                telefone TEXT,
+                email TEXT,
+                cidade TEXT,
+                observacao TEXT,
+                data_criacao TEXT
+            );
+              """)
 
     # LANÇAMENTOS
     c.execute("""

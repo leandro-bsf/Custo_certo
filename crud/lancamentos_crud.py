@@ -4,14 +4,14 @@ from datetime import datetime
 
 def criar_lancamento(usuario_id, id_categoria, id_obra, material,
                      tipo_medida, quantidade, valor_unitario,
-                     valor_extra, data_lancamento):
+                     valor_extra, data_lancamento,fornecedor_id):
 
     conn = get_connection()
     conn.execute("""
         INSERT INTO lancamentos
         (usuario_id, id_categoria, id_obra, material,
          tipo_medida, quantidade, valor_unitario,
-         valor_extra, data_lancamento)
+         valor_extra, data_lancamento,fornecedor_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         usuario_id,
@@ -22,7 +22,8 @@ def criar_lancamento(usuario_id, id_categoria, id_obra, material,
         quantidade,
         valor_unitario,
         valor_extra,
-        data_lancamento.strftime("%d/%m/%Y")
+        data_lancamento.strftime("%d/%m/%Y"),
+        fornecedor_id
     ))
     conn.commit()
     conn.close()
@@ -40,7 +41,8 @@ def listar_lancamentos(usuario_id):
             l.quantidade,
             l.valor_unitario,
             l.valor_extra,
-            l.data_lancamento
+            l.data_lancamento,
+            fornecedor_id
         FROM lancamentos l
         JOIN obras o ON l.id_obra = o.id
         JOIN categorias c ON l.id_categoria = c.id

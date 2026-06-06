@@ -2,12 +2,34 @@ import pandas as pd
 from database import get_connection
 from datetime import datetime
 
-def criar_obra(usuario_id, descricao, endereco, cidade, responsavel, contato, email):
+def criar_obra(
+    usuario_id,
+    descricao,
+    endereco,
+    cidade,
+    responsavel,
+    contato,
+    email,
+    status,
+    valor_contratado
+):
     conn = get_connection()
+
     conn.execute("""
-        INSERT INTO obras 
-        (usuario_id, descricao, endereco, cidade, responsavel, contato, email, data_criacao)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO obras
+        (
+            usuario_id,
+            descricao,
+            endereco,
+            cidade,
+            responsavel,
+            contato,
+            email,
+            status,
+            valor_contratado,
+            data_criacao
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         usuario_id,
         descricao,
@@ -16,8 +38,11 @@ def criar_obra(usuario_id, descricao, endereco, cidade, responsavel, contato, em
         responsavel,
         contato,
         email,
+        status,
+        valor_contratado,
         datetime.now().strftime("%d/%m/%Y")
     ))
+
     conn.commit()
     conn.close()
 

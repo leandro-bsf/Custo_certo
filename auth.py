@@ -18,7 +18,3 @@ def login_screen():
             else:
                 st.error("Credenciais inválidas")
 
-    with col2:
-        if st.button("Criar Conta"):
-            criar_usuario(email, senha)
-            st.success("Usuário criado! Faça login.")

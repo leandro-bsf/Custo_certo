@@ -1,10 +1,15 @@
 import streamlit as st
 from database import init_db
-from  auth import login_screen
-from modules import categorias, obras, lancamentos
+from auth import login_screen
+
+# IMPORTAÇÃO DOS MÓDULOS DE TELAS (Adicionado fornecedores)
+from modules import categorias, obras, lancamentos, fornecedores
+
+# IMPORTAÇÃO DOS CRUDS (Adicionado listar_fornecedores)
 from crud.obras_crud import listar_obras
 from crud.categorias_crud import listar_categorias
 from crud.lancamentos_crud import listar_lancamentos
+from crud.fornecedor_crud import listar_fornecedores
 
 # =========================
 # CONFIGURAÇÃO DA PÁGINA
@@ -14,6 +19,7 @@ st.set_page_config(
     page_icon="🏗️",
     layout="wide"
 )
+
 # =========================
 # ESTILO GLOBAL MODERNO
 # =========================
@@ -69,6 +75,16 @@ usuario_id = usuario[0]
 email = usuario[1]
 
 # =========================
+# SISTEMA DE NAVEGAÇÃO PERSISTENTE
+# =========================
+opcoes_menu = ["Dashboard", "Obras", "Categorias", "Lançamentos", "Fornecedores"]
+
+if "menu_atual" not in st.session_state:
+    st.session_state["menu_atual"] = "Dashboard"
+
+id_atual = opcoes_menu.index(st.session_state["menu_atual"])
+
+# =========================
 # SIDEBAR SaaS
 # =========================
 with st.sidebar:
@@ -78,9 +94,12 @@ with st.sidebar:
 
     menu = st.radio(
         "Menu",
-        ["Dashboard", "Obras", "Categorias", "Lançamentos"],
+        opcoes_menu,
+        index=id_atual,
         label_visibility="collapsed"
     )
+    # Atualiza o estado da sessão com o clique atual
+    st.session_state["menu_atual"] = menu
 
     st.markdown("---")
 
@@ -103,41 +122,50 @@ st.markdown("""
 # =========================
 # DASHBOARD
 # =========================
-if menu == "Dashboard":
+if st.session_state["menu_atual"] == "Dashboard":
 
     df_obras = listar_obras(usuario_id)
     df_cat = listar_categorias(usuario_id)
     df_lanc = listar_lancamentos(usuario_id)
+    df_forn = listar_fornecedores(usuario_id) # Buscando dados de fornecedores
 
-    col1, col2, col3 = st.columns(3)
+    # Mudado para 4 colunas para incluir os Fornecedores nas métricas
+    col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("🏗️ Obras", len(df_obras))
-    col2.metric("📁 Categorias", len(df_cat))
-    col3.metric("💰 Lançamentos", len(df_lanc))
+    col2.metric("🏢 Fornecedores", len(df_forn))
+    col3.metric("📁 Categorias", len(df_cat))
+    col4.metric("💰 Lançamentos", len(df_lanc))
 
     st.divider()
 
     st.subheader("📊 Últimos Lançamentos")
 
     if not df_lanc.empty:
-        st.dataframe(df_lanc, use_container_width=True)
+        st.dataframe(df_lanc, use_container_width=True, hide_index=True)
     else:
         st.info("Nenhum lançamento ainda.")
 
 # =========================
 # OBRAS
 # =========================
-elif menu == "Obras":
+elif st.session_state["menu_atual"] == "Obras":
     obras.render(usuario_id)
 
 # =========================
 # CATEGORIAS
 # =========================
-elif menu == "Categorias":
+elif st.session_state["menu_atual"] == "Categorias":
     categorias.render(usuario_id)
 
 # =========================
 # LANÇAMENTOS
 # =========================
-elif menu == "Lançamentos":
+elif st.session_state["menu_atual"] == "Lançamentos":
     lancamentos.render(usuario_id)
+
+# =========================
+# FORNECEDORES (Adicionado bloco que faltava)
+# =========================
+elif st.session_state["menu_atual"] == "Fornecedores":
+    fornecedores.render(usuario_id)
