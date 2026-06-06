@@ -8,25 +8,18 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# 4. Instala dependências do sistema operacional necessárias para compilar pacotes (se houver)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    software-properties-common \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# 5. Copia o arquivo de dependências primeiro (otimiza o cache das camadas do Docker)
+# 4. Copia apenas o arquivo de dependências primeiro (otimiza o cache)
 COPY requirements.txt .
 
-# 6. Atualiza o pip e instala as dependências da aplicação
+# 5. Atualiza o pip e instala as dependências da aplicação
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# 7. Copia todo o resto do seu código local para dentro do container
+# 6. Copia todo o resto do seu código local para dentro do container
 COPY . .
 
-# 8. Informa ao Docker que a aplicação escuta na porta padrão do Streamlit
+# 7. Informa ao Docker que a aplicação escuta na porta padrão do Streamlit
 EXPOSE 8501
 
-# 9. Comando para rodar o Streamlit apontando para o seu arquivo principal (ajuste se for main.py)
+# 8. Comando para rodar o Streamlit apontando para o seu arquivo principal
 CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
